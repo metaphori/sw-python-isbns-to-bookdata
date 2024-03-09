@@ -5,6 +5,8 @@ import pathlib # for globbing
 import os
 from difflib import SequenceMatcher
 
+HEADER = ['title', 'authors', 'year', 'isbn', 'isbn source file']
+
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
@@ -101,8 +103,8 @@ def complete_csv(csvfile):
   skip = False
   with open(csvfile, 'w', newline='', encoding='utf-8-sig') as f:
     w = csv.writer(f, delimiter='|', lineterminator='\n')
-    w.writerow(data[0]) # write header
-    for i, line in enumerate(data[1:]): # skip header
+    if data[0] == HEADER: w.writerow(data[0]) # write header
+    for i, line in enumerate(data[1 if data[0] == HEADER else 0:]): # skip header
       if i % 10 == 0 and not skip:
         print(f'[CONTROL] Processed other 10 rows. Do you want to skip the rest? (y/n)')
         skip = input() == 'y'
@@ -183,7 +185,7 @@ else:
   outf = open(args.outcsv, 'w', newline='')
   w = csv.writer(outf, delimiter='|', lineterminator='\n')
   # let's write the CSV header
-  w.writerow(['title', 'authors', 'year', 'isbn', 'isbn source file'])
+  w.writerow(HEADER)
   for filepath in all_filepaths:
     get_book_data(filepath, w)
   outf.close()
