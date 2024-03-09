@@ -108,62 +108,66 @@ def complete_csv(csvfile):
     w = csv.writer(f, delimiter='|', lineterminator='\n')
     if data[0] == HEADER: w.writerow(data[0]) # write header
     for i, line in enumerate(data[1 if data[0] == HEADER else 0:]): # skip header
-      if i % ASK_FOR_SKIP_EVERY == 0 and not skip and i > start:
-        print(f'[CONTROL] Processed other {ASK_FOR_SKIP_EVERY} rows. Do you want to skip the rest? (y/n)')
-        skip = input() == 'y'
-      if i < start or skip:
-        w.writerow(line)
-        continue
-      print(f'[{i}] {line}')
-      if line[0] != '???': 
-        if args.check:
-          isbn = line[3]
-          if args.gsearch:
-            gsearch = search(isbn, num_results=5, timeout=2) 
-            any_similar = False
-            for item in gsearch:
-              if similar(line[0], item) > 0.3:
-                any_similar = True
-                # print(f'[CHECK] GSEARCH similarity above threshold for: {item}')
-            if not any_similar:
-              print(f'[CHECK] No similar title found on Google Search.\n{list(gsearch)}')
-          jres = google_book_json_to_data(get_book_data_from_google(isbn), line) if args.google else None
-          if jres is None or not args.google:
-            print(f'[CHECK] No data selected. Rewriting original line.') 
-            w.writerow(line)
-            continue
-          if not similar(jres[0], line[0]) > 0.8:
-            print(f'[CHECK] Row {line} has a title that is not similar to the one found on Google Books: {jres[0]}')
-            print(f'[CHECK] Do you wanna replace it? (y/n)')
-            replace = input()
-            if replace == 'y':
-              title, authors, year = jres
-              isbn = line[3]
-              isbn_filename = line[4]
-              w.writerow([title, authors, year, isbn, isbn_filename])
+      try:
+        if i % ASK_FOR_SKIP_EVERY == 0 and not skip and i > start:
+          print(f'[CONTROL] Processed other {ASK_FOR_SKIP_EVERY} rows. Do you want to skip the rest? (y/n)')
+          skip = input() == 'y'
+        if i < start or skip:
+          w.writerow(line)
+          continue
+        print(f'[{i}] {line}')
+        if line[0] != '???': 
+          if args.check:
+            isbn = line[3]
+            if args.gsearch:
+              gsearch = search(isbn, num_results=5, timeout=2, sleep_interval=10, proxy='104.21.66.184') # sleep of K secs to avoid google from blocking queries 
+              any_similar = False
+              for item in gsearch:
+                if similar(line[0], item) > 0.3:
+                  any_similar = True
+                  # print(f'[CHECK] GSEARCH similarity above threshold for: {item}')
+              if not any_similar:
+                print(f'[CHECK] No similar title found on Google Search.\n{str(gsearch)}')
+            jres = google_book_json_to_data(get_book_data_from_google(isbn), line) if args.google else None
+            if jres is None or not args.google:
+              print(f'[CHECK] No data selected. Rewriting original line.') 
+              w.writerow(line)
+              continue
+            if not similar(jres[0], line[0]) > 0.8:
+              print(f'[CHECK] Row {line} has a title that is not similar to the one found on Google Books: {jres[0]}')
+              print(f'[CHECK] Do you wanna replace it? (y/n)')
+              replace = input()
+              if replace == 'y':
+                title, authors, year = jres
+                isbn = line[3]
+                isbn_filename = line[4]
+                w.writerow([title, authors, year, isbn, isbn_filename])
+              else:
+                print(f'[CHECK] Keeping the original title. ')
+                w.writerow(line)
             else:
-              print(f'[CHECK] Keeping the original title. ')
+              print(f'[CHECK] Similar title. Rewriting line. ')
               w.writerow(line)
           else:
-            print(f'[CHECK] Similar title. Rewriting line. ')
             w.writerow(line)
         else:
-          w.writerow(line)
-      else:
-        print(f'[ROW] Completing row {line}')
-        isbn = line[3]
-        jres = get_book_data_from_google(isbn)
-        jres = google_book_json_to_data(jres)
-        if jres is None: 
-          w.writerow(line)
-          print(line)
-        else:
-          title, authors, year = jres
+          print(f'[ROW] Completing row {line}')
           isbn = line[3]
-          isbn_filename = line[4]
-          w.writerow([title, authors, year, isbn, isbn_filename])
-          print([title, authors, year, isbn, isbn_filename])
-
+          jres = get_book_data_from_google(isbn)
+          jres = google_book_json_to_data(jres)
+          if jres is None: 
+            w.writerow(line)
+            print(line)
+          else:
+            title, authors, year = jres
+            isbn = line[3]
+            isbn_filename = line[4]
+            w.writerow([title, authors, year, isbn, isbn_filename])
+            print([title, authors, year, isbn, isbn_filename])
+      except Exception as e:
+        print(f'[ERROR] on line {i} : {e}')
+        w.writerow(line)
+        continue
 
 import argparse
 parser = argparse.ArgumentParser()
