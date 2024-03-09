@@ -4,6 +4,7 @@ import json
 import pathlib # for globbing
 import os
 from difflib import SequenceMatcher
+from googlesearch import search
 
 HEADER = ['title', 'authors', 'year', 'isbn', 'isbn source file']
 
@@ -69,6 +70,7 @@ def get_book_data(isbn_file, out):
 
 def google_book_json_to_data(jres, original=None):
   if jres is None or jres.get('totalItems', 0) == 0 or 'items' not in jres:
+    print(f'[GOOGLE] No bookdata found for isbn. ')
     return None
   if len(jres['items']) == 1:
     jres = jres['items'][0]
@@ -116,8 +118,17 @@ def complete_csv(csvfile):
       if line[0] != '???': 
         if args.check:
           isbn = line[3]
-          jres = google_book_json_to_data(get_book_data_from_google(isbn), line)
-          if jres is None:
+          if args.gsearch:
+            gsearch = search(isbn)
+            any_similar = False
+            for item in gsearch:
+              if similar(line[0], item) > 0.3:
+                any_similar = True
+                # print(f'[CHECK] GSEARCH similarity above threshold for: {item}')
+            if not any_similar:
+              print(f'[CHECK] No similar title found on Google Search.\n{list(gsearch)}')
+          jres = google_book_json_to_data(get_book_data_from_google(isbn), line) if args.google else None
+          if jres is None or not args.google:
             print(f'[CHECK] No data selected. Rewriting original line.') 
             w.writerow(line)
             continue
@@ -158,6 +169,8 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("csvfiles", help="path to csv files", type=str, default="*.txt", nargs='*')
 parser.add_argument("--check", help="only check if isbn data matches the right details", type=bool, default=False) # optional arg
+parser.add_argument("--google", help="enable/disable googleapi check", type=bool, default=False) # optional arg
+parser.add_argument("--gsearch", help="enable/disable google search check", type=bool, default=False) # optional arg
 parser.add_argument("-outcsv", help="path to output csv file", type=str, default="books.csv", required=False)
 parser.add_argument("-v", "--verbosity", help="increase output verbosity", action="store_true") # optional arg
 args = parser.parse_args()
@@ -175,7 +188,7 @@ else:
   basedir = os.path.abspath(os.path.dirname(args.csvfiles))
   basefile = os.path.basename(args.csvfiles)
   all_filepaths = list(pathlib.Path(basedir).glob(basefile))
-print(f'basedir: {basedir}\nbasefile: {basefile}\nall_filepaths: {all_filepaths}')
+print(f'basedir: {basedir}\nbasefile: {basefile}\nall_filepaths: {all_filepaths}\ngoogleapis.com: {args.google}')
 
 if len(all_filepaths)==1 and str(all_filepaths[0]).endswith('.csv'):
   # a csv file has to be completed
