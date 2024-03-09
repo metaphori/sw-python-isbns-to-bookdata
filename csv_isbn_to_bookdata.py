@@ -96,9 +96,9 @@ def google_book_json_to_data(jres, original=None):
 
 def complete_csv(csvfile):
   print(f'Completing csv file {csvfile}')
-  print('Enter number of row to start with: ')
-  start_input = input()
-  start = int(start_input) if start_input.isdigit() else 1
+  # print('Enter number of row to start with: ')
+  #start_input = input()
+  start = args.startline # int(start_input) if start_input.isdigit() else 1
   f = open(csvfile, 'r', newline='', encoding='utf-8-sig')
   data = list(csv.reader(f, delimiter='|'))
   f.close()
@@ -119,7 +119,7 @@ def complete_csv(csvfile):
         if args.check:
           isbn = line[3]
           if args.gsearch:
-            gsearch = search(isbn)
+            gsearch = search(isbn, num_results=5, timeout=2) 
             any_similar = False
             for item in gsearch:
               if similar(line[0], item) > 0.3:
@@ -171,6 +171,7 @@ parser.add_argument("csvfiles", help="path to csv files", type=str, default="*.t
 parser.add_argument("--check", help="only check if isbn data matches the right details", type=bool, default=False) # optional arg
 parser.add_argument("--google", help="enable/disable googleapi check", type=bool, default=False) # optional arg
 parser.add_argument("--gsearch", help="enable/disable google search check", type=bool, default=False) # optional arg
+parser.add_argument("--startline", help="specify start line for check", type=int, default=1) # optional arg
 parser.add_argument("-outcsv", help="path to output csv file", type=str, default="books.csv", required=False)
 parser.add_argument("-v", "--verbosity", help="increase output verbosity", action="store_true") # optional arg
 args = parser.parse_args()
