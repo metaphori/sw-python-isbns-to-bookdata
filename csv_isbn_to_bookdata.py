@@ -105,7 +105,7 @@ def complete_csv(csvfile):
     w = csv.writer(f, delimiter='|', lineterminator='\n')
     if data[0] == HEADER: w.writerow(data[0]) # write header
     for i, line in enumerate(data[1 if data[0] == HEADER else 0:]): # skip header
-      if i % 10 == 0 and not skip:
+      if i % 10 == 0 and not skip and i > start:
         print(f'[CONTROL] Processed other 10 rows. Do you want to skip the rest? (y/n)')
         skip = input() == 'y'
       if i < start or skip:
