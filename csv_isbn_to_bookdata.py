@@ -3,6 +3,10 @@ import requests
 import json
 import pathlib # for globbing
 import os
+from difflib import SequenceMatcher
+
+def similar(a, b):
+    return SequenceMatcher(None, a, b).ratio()
 
 def get_or_else(m, k, default):
   return m[k] if k in m else default
@@ -61,25 +65,86 @@ def get_book_data(isbn_file, out):
         print(title, authors, year, isbn)
         out.writerow([title, authors, year, isbn, isbn_filename])
 
+def google_book_json_to_data(jres, original=None):
+  if jres is None or jres.get('totalItems', 0) == 0 or 'items' not in jres:
+    return None
+  if len(jres['items']) == 1:
+    jres = jres['items'][0]
+  else:
+    matched = False
+    for i, item in enumerate(jres['items']):
+      if similar(item['volumeInfo']['title'], original[0]) > 0.8:
+        jres = item
+        matched = True
+    if not matched:
+      print(f'Warning: multiple items found for this ISBN, and no similar title. Which one do you use?')
+      for i, item in enumerate(jres['items']):
+        print(f'{i}: {item["volumeInfo"]["title"]}')
+      choice = int(input())
+      jres = jres['items'][choice] if choice in range(len(jres['items'])) else None
+  if jres is None: return None
+
+  volume_info = jres['volumeInfo']
+  title = get_or_else(volume_info, 'title', '???')
+  authors = ', '.join(get_or_else(volume_info, 'authors', '???'))
+  year = get_or_else(volume_info, 'publishedDate', '???')
+  return [title, authors, year]
+
 def complete_csv(csvfile):
+  print(f'Completing csv file {csvfile}')
+  print('Enter number of row to start with: ')
+  start_input = input()
+  start = int(start_input) if start_input.isdigit() else 1
   f = open(csvfile, 'r', newline='', encoding='utf-8-sig')
   data = list(csv.reader(f, delimiter='|'))
   f.close()
+  skip = False
   with open(csvfile, 'w', newline='', encoding='utf-8-sig') as f:
     w = csv.writer(f, delimiter='|', lineterminator='\n')
-    for line in data:
-      if line[0] != '???': w.writerow(line)
+    w.writerow(data[0]) # write header
+    for i, line in enumerate(data[1:]): # skip header
+      if i % 10 == 0 and not skip:
+        print(f'[CONTROL] Processed other 10 rows. Do you want to skip the rest? (y/n)')
+        skip = input() == 'y'
+      if i < start or skip:
+        w.writerow(line)
+        continue
+      print(f'[{i}] {line}')
+      if line[0] != '???': 
+        if args.check:
+          isbn = line[3]
+          jres = google_book_json_to_data(get_book_data_from_google(isbn), line)
+          if jres is None:
+            print(f'[CHECK] No data selected. Rewriting original line.') 
+            w.writerow(line)
+            continue
+          if not similar(jres[0], line[0]) > 0.8:
+            print(f'[CHECK] Row {line} has a title that is not similar to the one found on Google Books: {jres[0]}')
+            print(f'[CHECK] Do you wanna replace it? (y/n)')
+            replace = input()
+            if replace == 'y':
+              title, authors, year = jres
+              isbn = line[3]
+              isbn_filename = line[4]
+              w.writerow([title, authors, year, isbn, isbn_filename])
+            else:
+              print(f'[CHECK] Keeping the original title. ')
+              w.writerow(line)
+          else:
+            print(f'[CHECK] Similar title. Rewriting line. ')
+            w.writerow(line)
+        else:
+          w.writerow(line)
       else:
+        print(f'[ROW] Completing row {line}')
         isbn = line[3]
         jres = get_book_data_from_google(isbn)
-        if jres is None or jres.get('totalItems', 0) == 0 or 'items' not in jres: 
+        jres = google_book_json_to_data(jres)
+        if jres is None: 
           w.writerow(line)
           print(line)
         else:
-          jres = jres['items'][0]
-          title = jres['volumeInfo']['title']
-          authors = ', '.join(jres['volumeInfo']['authors'])
-          year = jres['volumeInfo']['publishedDate']
+          title, authors, year = jres
           isbn = line[3]
           isbn_filename = line[4]
           w.writerow([title, authors, year, isbn, isbn_filename])
@@ -89,6 +154,7 @@ def complete_csv(csvfile):
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("csvfiles", help="path to csv files", type=str, default="*.txt", nargs='*')
+parser.add_argument("--check", help="only check if isbn data matches the right details", type=bool, default=False) # optional arg
 parser.add_argument("-outcsv", help="path to output csv file", type=str, default="books.csv", required=False)
 parser.add_argument("-v", "--verbosity", help="increase output verbosity", action="store_true") # optional arg
 args = parser.parse_args()
