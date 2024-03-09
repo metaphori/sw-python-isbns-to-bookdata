@@ -1,4 +1,4 @@
-title|authors|year|isbn|isbn source file|
+﻿title|authors|year|isbn|isbn source file|
 CANopen Implementation|Mohammad Farsi, Manuel Bernardo, Martins Barbosa, Manuel Bernardo Martins Barbosa|01/11/99|9780863802478|isbns-scatolone1.txt|
 Designer's guide to the Cypress PSoC|Robert Ashby|2005|9780750677806|isbns-scatolone1.txt|
 Power semiconductor circuits|S. B. Dewan|1975|047121180X|isbns-scatolone1.txt|
@@ -11,7 +11,7 @@ Assembly language and systems programming for the M68000 family|Ford, William.|1
 Usare subito Internet|Guglielmi Luciano - Limongiello Gianpiero - Mattasoglio Andrea|1995|9788825607345|isbns-scatolone1.txt|
 Advanced PIC Microcontroller Projects in C|Dogan Ibrahim|March 26, 2008|9780750686112|isbns-scatolone1.txt|
 Introduzione al Turbo Pascal|Stivison Douglas S.|1990|8870214389|isbns-scatolone1.txt|
-Pascal Made Simple (Made Simple Computer)|McBride, P. K. McBride|01/01/96|9780750632423|isbns-scatolone1.txt|
+Pascal Made Simple|P. K. McBride|1997|9780750632423|isbns-scatolone1.txt
 Programmare in Pascal|Peter Grogono|1995|8870212009|isbns-scatolone1.txt|https://www.amazon.it/Programmare-Pascal-Peter-Grogono/dp/8870212009
 ???|???|???|8870213676|isbns-scatolone1.txt|
 Structured computer organization|Andrew S. Tanenbaum|1990|9780138528720|isbns-scatolone1.txt|
@@ -22,12 +22,12 @@ Compatibilità elettromagnetica|Clayton R. Paul|1995|9788820322106|isbns-scatolo
 Electrical Machines and Drives, Third Edition|John Hindmarsh, Alasdair Renfrew|September 18, 1997|9780750627245|isbns-scatolone1.txt|
 EMC for product designers|Tim Williams|1996|9780750624664|isbns-scatolone1.txt|
 CMOS cookbook|Don Lancaster|1997|9780750699433|isbns-scatolone1.txt|
-Macchine elettriche|???, ???, ???, ???, ???, ???, ???, ???, ???, ???, ???, ???, ???, ???|unknown year|9788820422158|isbns-scatolone1.txt|
+Macchine elettriche. Processi, apparati e sistemi per la conversione di energia|Arthur Eugene Fitzgerald, Charles Kingsley (Jr.), A. Kusko|1991|9788820422158|isbns-scatolone1.txt
 Designing embedded systems with PIC microcontrollers|Tim Wilmshurst|2010|9781856177504|isbns-scatolone1.txt|
 La nuova guida a Matlab, Simulink e Control Toolbox|Alberto Cavallo, Roberto Setola, Francesco Vasca|2002|9788820733681|isbns-scatolone1.txt|
 Digital control of electric drives|Ryszard Kozioł|1992|444988211|isbns-scatolone1.txt|
 EMI filter design|Richard Lee Ozenbaugh|1996|824796314|isbns-scatolone1.txt|
-EMC in Power Electronics|Laszlo Tihanyi|March 13, 1997|9780750623797|isbns-scatolone1.txt|
+Electromagnetic Compatibility in Power Electronics|László Tihanyi|1995|9780750623797|isbns-scatolone1.txt
 Vector control of AC machines|Peter Vas|1990|9780198593706|isbns-scatolone1.txt|
 Power Electronics|V. R. Moorthi|April 1, 2005|9780195670929|isbns-scatolone1.txt|
 Assembly. Imparare l'assembly attraverso un simulatore software|Paolo Di Leo|2019|9788869283352|isbns-scatolone1.txt|
